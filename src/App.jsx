@@ -3,7 +3,8 @@ import { Calendar, Save, Download, AlertCircle, Clock, Filter } from 'lucide-rea
 
 export default function App() {
   const bays = ['1', '2', '3', '4'];
-  const jalurs = ['PERTAMAX', 'PERTALITE', 'B40'];
+  // Mengubah B40 menjadi BIO SOLAR
+  const jalurs = ['PERTAMAX', 'PERTALITE', 'BIO SOLAR'];
   const bulanList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
   const [selectedBay, setSelectedBay] = useState('1');
@@ -32,13 +33,12 @@ export default function App() {
   const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // === FITUR BARU: Mengambil data dari Backend saat web pertama kali dibuka ===
   useEffect(() => {
     fetch('http://localhost:5000/api/data')
       .then(res => res.json())
       .then(data => {
         if (Object.keys(data).length > 0) {
-          setAllData(data); // Timpa data kosong dengan data dari database
+          setAllData(data);
         }
       })
       .catch(err => console.log("Gagal terhubung ke server backend lokal", err));
@@ -73,7 +73,6 @@ export default function App() {
     }
   };
 
-  // === FITUR BARU: Mengirim data ke Backend Node.js ===
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -160,7 +159,6 @@ export default function App() {
       <div className="min-h-screen bg-[#F8FAFC] p-3 sm:p-4 md:p-8 font-poppins text-black relative pb-24">
         <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           
-          {/* Header Responsif */}
           <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h1 className="text-lg sm:text-xl md:text-3xl font-extrabold text-black tracking-tight uppercase leading-snug">
@@ -179,7 +177,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Filter Area Responsif */}
           <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col lg:flex-row items-start lg:items-center gap-5 lg:gap-8">
             <div className="flex items-center gap-2 text-black font-semibold">
               <Filter size={20} className="text-blue-600" />
@@ -224,7 +221,7 @@ export default function App() {
                       btnClass = selectedJalur === jalur ? 'bg-[#2563EB] text-white shadow-md border-[#2563EB]' : 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
                     } else if (jalur === 'PERTALITE') {
                       btnClass = selectedJalur === jalur ? 'bg-[#16A34A] text-white shadow-md border-[#16A34A]' : 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200';
-                    } else if (jalur === 'B40') {
+                    } else if (jalur === 'BIO SOLAR') { // Diubah ke BIO SOLAR
                       btnClass = selectedJalur === jalur ? 'bg-[#64748B] text-white shadow-md border-[#64748B]' : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300';
                     }
                     
@@ -243,12 +240,10 @@ export default function App() {
             </div>
           </div>
 
-          {/* Table Section Responsif */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="bg-[#F8FAFC] border-b border-gray-200 p-3 md:p-4 px-4 md:px-5">
               <h3 className="font-bold text-[#1E3A8A] text-xs md:text-sm tracking-wide">Data Sheet Aktif: Bay {selectedBay} - Jalur {selectedJalur} - Bulan {selectedBulan}</h3>
             </div>
-            {/* Wrapper table dengan overflow-x-auto untuk geser horizontal di HP */}
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead className="bg-black text-white text-[10px] md:text-[11px] uppercase tracking-wider">
@@ -296,7 +291,6 @@ export default function App() {
               </table>
             </div>
             
-            {/* Footer Action Buttons Responsif */}
             <div className="bg-white p-4 md:p-5 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
               <button onClick={handleExportExcel} disabled={isExporting} className={`flex justify-center items-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-white border border-[#16A34A] text-[#16A34A] rounded-md hover:bg-green-50 transition-all font-bold text-sm shadow-sm ${isExporting ? 'opacity-70 cursor-wait' : ''}`}>
                 <Download size={18} />
@@ -309,14 +303,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* Info Box Responsif */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-5 flex gap-3 md:gap-4 shadow-sm">
                <Clock className="text-blue-600 shrink-0 mt-0.5" size={24} />
                <div>
                   <h4 className="font-bold text-blue-900 text-sm md:text-base">Siklus Cleaning</h4>
-                  {/* Margin atas (mt) diperbesar di sini */}
-                  <p className="text-xs md:text-sm text-blue-800 mt-2 md:mt-3 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
+                  <p className="text-xs md:text-sm text-blue-800 mt-1 md:mt-1.5 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
                </div>
              </div>
              
@@ -324,14 +316,13 @@ export default function App() {
                <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={24} />
                <div>
                   <h4 className="font-bold text-amber-900 text-sm md:text-base">Peringatan ΔP (Pressure Drop)</h4>
-                  {/* Margin atas (mt) diperbesar di sini */}
-                  <p className="text-xs md:text-sm text-amber-800 mt-2 md:mt-3 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
+                  <p className="text-xs md:text-sm text-amber-800 mt-1 md:mt-1.5 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
                </div>
              </div>
           </div>
 
-          {/* Copyright Footer */}
-          <div className="mt-[60px] md:mt-[80px] text-center pb-8">
+          {/* Copyright Footer - Jarak (mt) sudah dikurangi */}
+          <div className="mt-10 md:mt-12 text-center pb-8">
             <p className="text-xs md:text-sm font-bold text-gray-500">
               &copy; 2026 Fuel Terminal Tuban. All Rights Reserved
             </p>
