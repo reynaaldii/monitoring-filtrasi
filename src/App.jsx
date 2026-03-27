@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Save, Download, AlertCircle, Clock, Filter } from 'lucide-react';
 
 export default function App() {
-  // Configuration for Bays, Jalurs, and Bulan
   const bays = ['1', '2', '3', '4'];
   const jalurs = ['PERTAMAX', 'PERTALITE', 'B40'];
   const bulanList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -11,7 +10,6 @@ export default function App() {
   const [selectedJalur, setSelectedJalur] = useState('PERTAMAX');
   const [selectedBulan, setSelectedBulan] = useState('Januari');
 
-  // Helper to generate 4 weeks template
   const generateInitialWeeks = () => [
     { id: 1, minggu: 'Minggu 1', tanggal: '', deltaP: '', flowrate: '', kondisi: 'Bersih', indikasi: 'Normal', tindakan: '-', pic: '', keterangan: '', tanggalService: '' },
     { id: 2, minggu: 'Minggu 2', tanggal: '', deltaP: '', flowrate: '', kondisi: 'Mulai kotor', indikasi: 'Monitoring', tindakan: '-', pic: '', keterangan: '', tanggalService: '' },
@@ -19,7 +17,6 @@ export default function App() {
     { id: 4, minggu: 'Minggu 4', tanggal: '', deltaP: '', flowrate: '', kondisi: 'Clogging', indikasi: 'Kritis', tindakan: 'Wajib cleaning', pic: '', keterangan: '', tanggalService: '' }
   ];
 
-  // Store data for ALL combinations of Bay, Jalur, and Bulan
   const [allData, setAllData] = useState(() => {
     const initialData = {};
     bays.forEach(b => {
@@ -32,12 +29,24 @@ export default function App() {
     return initialData;
   });
 
-  const currentKey = `${selectedBay}-${selectedJalur}-${selectedBulan}`;
-  const currentData = allData[currentKey];
-
   const [isExporting, setIsExporting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Options for dropdowns
+  // === FITUR BARU: Mengambil data dari Backend saat web pertama kali dibuka ===
+  useEffect(() => {
+    fetch('http://localhost:5000/api/data')
+      .then(res => res.json())
+      .then(data => {
+        if (Object.keys(data).length > 0) {
+          setAllData(data); // Timpa data kosong dengan data dari database
+        }
+      })
+      .catch(err => console.log("Gagal terhubung ke server backend lokal", err));
+  }, []);
+
+  const currentKey = `${selectedBay}-${selectedJalur}-${selectedBulan}`;
+  const currentData = allData[currentKey] || generateInitialWeeks();
+
   const kondisiOptions = ['Bersih', 'Mulai kotor', 'Kotor', 'Clogging'];
   const indikasiOptions = ['Normal', 'Monitoring', 'Warning', 'Kritis'];
   const tindakanOptions = ['-', 'Persiapan cleaning', 'Wajib cleaning', 'Ganti Filter'];
@@ -64,13 +73,31 @@ export default function App() {
     }
   };
 
-  const handleSave = () => {
-    alert(`Data monitoring untuk Bay ${selectedBay} - ${selectedJalur} (Bulan ${selectedBulan}) berhasil disimpan!`);
+  // === FITUR BARU: Mengirim data ke Backend Node.js ===
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(allData)
+      });
+      
+      if (response.ok) {
+        alert(`Data monitoring untuk Bulan ${selectedBulan} berhasil direkam ke Database!`);
+      } else {
+        alert('Gagal menyimpan ke server.');
+      }
+    } catch (error) {
+      alert('Error: Pastikan Server Node.js (Backend) sedang berjalan!');
+    }
+    setIsSaving(false);
   };
 
   const handleExportExcel = () => {
     setIsExporting(true);
-
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
     script.onload = () => {
@@ -117,12 +144,10 @@ export default function App() {
     document.body.appendChild(script);
   };
 
-  // Styling khusus untuk memanggil font Poppins dan memperbesar input
   const inputClassName = "w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
 
   return (
     <>
-      {/* Import Font Poppins secara langsung */}
       <style>
         {`
           @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
@@ -132,11 +157,9 @@ export default function App() {
         `}
       </style>
 
-      {/* Background diubah jadi bg-white, teks jadi text-black, dan font-poppins */}
-      <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-poppins text-black">
+      <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-poppins text-black relative pb-24">
         <div className="max-w-7xl mx-auto space-y-6">
           
-          {/* Header Section */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-row justify-between items-center gap-4">
             <div>
               <h1 className="text-xl md:text-3xl font-extrabold text-black tracking-tight uppercase">MONITORING SISTEM FILTRASI</h1>
@@ -153,7 +176,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Filter / Bay & Jalur Selectors */}
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex flex-wrap items-center gap-8">
             <div className="flex items-center gap-2 text-black font-semibold">
               <Filter size={20} className="text-blue-600" />
@@ -175,7 +197,6 @@ export default function App() {
 
             <div className="flex items-center gap-3">
               <span className="text-sm font-bold text-gray-600 w-12 md:w-auto">Bay:</span>
-              {/* Memberikan gap-2 antar tombol Bay agar ada jarak yang rapi */}
               <div className="flex flex-wrap gap-2">
                 {bays.map(bay => (
                   <button
@@ -191,22 +212,15 @@ export default function App() {
 
             <div className="flex items-center gap-3">
               <span className="text-sm font-bold text-gray-600 w-12 md:w-auto">Jalur:</span>
-              {/* Memberikan gap-3 antar tombol produk dan mengatur warna dasar */}
               <div className="flex flex-wrap gap-3">
                 {jalurs.map(jalur => {
                   let btnClass = '';
                   if (jalur === 'PERTAMAX') {
-                    btnClass = selectedJalur === jalur 
-                      ? 'bg-[#2563EB] text-white shadow-md border-[#2563EB]' 
-                      : 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
+                    btnClass = selectedJalur === jalur ? 'bg-[#2563EB] text-white shadow-md border-[#2563EB]' : 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
                   } else if (jalur === 'PERTALITE') {
-                    btnClass = selectedJalur === jalur 
-                      ? 'bg-[#16A34A] text-white shadow-md border-[#16A34A]' 
-                      : 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200';
+                    btnClass = selectedJalur === jalur ? 'bg-[#16A34A] text-white shadow-md border-[#16A34A]' : 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200';
                   } else if (jalur === 'B40') {
-                    btnClass = selectedJalur === jalur 
-                      ? 'bg-[#64748B] text-white shadow-md border-[#64748B]' 
-                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300';
+                    btnClass = selectedJalur === jalur ? 'bg-[#64748B] text-white shadow-md border-[#64748B]' : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300';
                   }
                   
                   return (
@@ -223,7 +237,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Table Section */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="bg-[#F8FAFC] border-b border-gray-200 p-4 px-5">
               <h3 className="font-bold text-[#1E3A8A] text-sm tracking-wide">Data Sheet Aktif: Bay {selectedBay} - Jalur {selectedJalur} - Bulan {selectedBulan}</h3>
@@ -248,48 +261,27 @@ export default function App() {
                   {currentData.map((row) => (
                     <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-3 font-extrabold text-black whitespace-nowrap text-sm">{row.minggu}</td>
-                      
-                      <td className="px-5 py-3">
-                        <input type="date" value={row.tanggal} onChange={(e) => handleInputChange(row.id, 'tanggal', e.target.value)} className={inputClassName} />
-                      </td>
-                      
-                      <td className="px-5 py-3">
-                        <input type="number" step="0.01" placeholder="0.00" value={row.deltaP} onChange={(e) => handleInputChange(row.id, 'deltaP', e.target.value)} className={inputClassName} />
-                      </td>
-                      
-                      <td className="px-5 py-3">
-                        <input type="number" step="0.1" placeholder="0.0" value={row.flowrate} onChange={(e) => handleInputChange(row.id, 'flowrate', e.target.value)} className={inputClassName} />
-                      </td>
-                      
+                      <td className="px-5 py-3"><input type="date" value={row.tanggal} onChange={(e) => handleInputChange(row.id, 'tanggal', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="number" step="0.01" placeholder="0.00" value={row.deltaP} onChange={(e) => handleInputChange(row.id, 'deltaP', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="number" step="0.1" placeholder="0.0" value={row.flowrate} onChange={(e) => handleInputChange(row.id, 'flowrate', e.target.value)} className={inputClassName} /></td>
                       <td className="px-5 py-3">
                         <select value={row.kondisi} onChange={(e) => handleInputChange(row.id, 'kondisi', e.target.value)} className={inputClassName}>
                           {kondisiOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                       </td>
-                      
                       <td className="px-5 py-3">
                         <select value={row.indikasi} onChange={(e) => handleInputChange(row.id, 'indikasi', e.target.value)} className={`w-full border rounded-md shadow-sm text-sm p-2 font-bold focus:outline-none transition-all ${getIndikasiColor(row.indikasi)}`}>
                           {indikasiOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                       </td>
-                      
                       <td className="px-5 py-3">
                         <select value={row.tindakan} onChange={(e) => handleInputChange(row.id, 'tindakan', e.target.value)} className={inputClassName}>
                           {tindakanOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                       </td>
-                      
-                      <td className="px-5 py-3">
-                        <input type="text" placeholder="PIC" value={row.pic} onChange={(e) => handleInputChange(row.id, 'pic', e.target.value)} className={inputClassName} />
-                      </td>
-                      
-                      <td className="px-5 py-3">
-                        <input type="text" placeholder="Catatan..." value={row.keterangan} onChange={(e) => handleInputChange(row.id, 'keterangan', e.target.value)} className={inputClassName} />
-                      </td>
-
-                      <td className="px-5 py-3">
-                        <input type="date" value={row.tanggalService} onChange={(e) => handleInputChange(row.id, 'tanggalService', e.target.value)} className={inputClassName} />
-                      </td>
+                      <td className="px-5 py-3"><input type="text" placeholder="PIC" value={row.pic} onChange={(e) => handleInputChange(row.id, 'pic', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="text" placeholder="Catatan..." value={row.keterangan} onChange={(e) => handleInputChange(row.id, 'keterangan', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="date" value={row.tanggalService} onChange={(e) => handleInputChange(row.id, 'tanggalService', e.target.value)} className={inputClassName} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -301,9 +293,9 @@ export default function App() {
                 <Download size={18} />
                 {isExporting ? 'Memproses Excel...' : 'Export Excel'}
               </button>
-              <button onClick={handleSave} className="flex items-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white px-6 py-2.5 rounded-md font-bold text-sm transition-all shadow-sm">
+              <button onClick={handleSave} disabled={isSaving} className={`flex items-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white px-6 py-2.5 rounded-md font-bold text-sm transition-all shadow-sm ${isSaving ? 'opacity-70 cursor-wait' : ''}`}>
                 <Save size={18} />
-                Simpan Data
+                {isSaving ? 'Menyimpan...' : 'Simpan Data'}
               </button>
             </div>
           </div>
@@ -324,6 +316,13 @@ export default function App() {
                   <p className="text-xs text-amber-800 mt-1.5 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
                </div>
              </div>
+          </div>
+
+          {/* Copyright Footer */}
+          <div className="mt-20 text-center pb-8">
+            <p className="text-sm font-bold text-gray-500">
+              &copy; 2026 Fuel Terminal Tuban. All Rights Reserved
+            </p>
           </div>
 
         </div>
