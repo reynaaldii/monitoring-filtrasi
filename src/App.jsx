@@ -3,7 +3,7 @@ import { Calendar, Save, Download, AlertCircle, Clock, Filter } from 'lucide-rea
 
 export default function App() {
   const bays = ['1', '2', '3', '4'];
-  const jalurs = ['PERTAMAX', 'PERTALITE', 'BIO SOLAR'];
+  const jalurs = ['PERTAMAX', 'PERTALITE', 'B40'];
   const bulanList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
   const [selectedBay, setSelectedBay] = useState('1');
@@ -315,7 +315,8 @@ export default function App() {
                <Clock className="text-blue-600 shrink-0 mt-0.5" size={24} />
                <div>
                   <h4 className="font-bold text-blue-900 text-sm md:text-base">Siklus Cleaning</h4>
-                  <p className="text-xs md:text-sm text-blue-800 mt-1 md:mt-1 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
+                  {/* Margin atas (mt) diperbesar di sini */}
+                  <p className="text-xs md:text-sm text-blue-800 mt-2 md:mt-3 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
                </div>
              </div>
              
@@ -323,7 +324,8 @@ export default function App() {
                <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={24} />
                <div>
                   <h4 className="font-bold text-amber-900 text-sm md:text-base">Peringatan ΔP (Pressure Drop)</h4>
-                  <p className="text-xs md:text-sm text-amber-800 mt-1 md:mt-1.5 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
+                  {/* Margin atas (mt) diperbesar di sini */}
+                  <p className="text-xs md:text-sm text-amber-800 mt-2 md:mt-3 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
                </div>
              </div>
           </div>
