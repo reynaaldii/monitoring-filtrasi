@@ -3,7 +3,8 @@ import { Calendar, Save, Download, AlertCircle, Clock, Filter } from 'lucide-rea
 
 export default function App() {
   const bays = ['1', '2', '3', '4'];
-  const jalurs = ['PERTAMAX', 'PERTALITE', 'B40'];
+  // MENGUBAH B40 MENJADI BIO SOLAR
+  const jalurs = ['PERTAMAX', 'PERTALITE', 'BIO SOLAR'];
   const bulanList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
   const [selectedBay, setSelectedBay] = useState('1');
@@ -17,7 +18,17 @@ export default function App() {
     { id: 4, minggu: 'Minggu 4', tanggal: '', deltaP: '', flowrate: '', kondisi: 'Clogging', indikasi: 'Kritis', tindakan: 'Wajib cleaning', pic: '', keterangan: '', tanggalService: '' }
   ];
 
+  // MENGAMBIL DATA DARI LOCAL STORAGE (Bukan dari Node.js)
   const [allData, setAllData] = useState(() => {
+    try {
+      const savedData = localStorage.getItem('dataMonitoringFiltrasi');
+      if (savedData) {
+        return JSON.parse(savedData);
+      }
+    } catch (e) {
+      console.warn('Gagal membaca Local Storage', e);
+    }
+
     const initialData = {};
     bays.forEach(b => {
       jalurs.forEach(j => {
@@ -32,17 +43,7 @@ export default function App() {
   const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // === FITUR BARU: Mengambil data dari Backend saat web pertama kali dibuka ===
-  useEffect(() => {
-    fetch('http://localhost:5000/api/data')
-      .then(res => res.json())
-      .then(data => {
-        if (Object.keys(data).length > 0) {
-          setAllData(data); // Timpa data kosong dengan data dari database
-        }
-      })
-      .catch(err => console.log("Gagal terhubung ke server backend lokal", err));
-  }, []);
+  // SERVER NODE.JS (useEffect fetch) SUDAH DIHAPUS
 
   const currentKey = `${selectedBay}-${selectedJalur}-${selectedBulan}`;
   const currentData = allData[currentKey] || generateInitialWeeks();
@@ -73,25 +74,14 @@ export default function App() {
     }
   };
 
-  // === FITUR BARU: Mengirim data ke Backend Node.js ===
-  const handleSave = async () => {
+  // MENYIMPAN DATA KE LOCAL STORAGE (Bukan ke Node.js)
+  const handleSave = () => {
     setIsSaving(true);
     try {
-      const response = await fetch('http://localhost:5000/api/data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(allData)
-      });
-      
-      if (response.ok) {
-        alert(`Data monitoring untuk Bulan ${selectedBulan} berhasil direkam ke Database!`);
-      } else {
-        alert('Gagal menyimpan ke server.');
-      }
+      localStorage.setItem('dataMonitoringFiltrasi', JSON.stringify(allData));
+      alert(`Data monitoring untuk Bulan ${selectedBulan} berhasil disimpan di perangkat ini!`);
     } catch (error) {
-      alert('Error: Pastikan Server Node.js (Backend) sedang berjalan!');
+      alert('Gagal menyimpan data ke memori perangkat.');
     }
     setIsSaving(false);
   };
@@ -219,7 +209,7 @@ export default function App() {
                     btnClass = selectedJalur === jalur ? 'bg-[#2563EB] text-white shadow-md border-[#2563EB]' : 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
                   } else if (jalur === 'PERTALITE') {
                     btnClass = selectedJalur === jalur ? 'bg-[#16A34A] text-white shadow-md border-[#16A34A]' : 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200';
-                  } else if (jalur === 'B40') {
+                  } else if (jalur === 'BIO SOLAR') {
                     btnClass = selectedJalur === jalur ? 'bg-[#64748B] text-white shadow-md border-[#64748B]' : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300';
                   }
                   
@@ -318,9 +308,9 @@ export default function App() {
              </div>
           </div>
 
-          {/* Copyright Footer */}
+          {/* Copyright Footer (Diubah menjadi Merah) */}
           <div className="mt-20 text-center pb-8">
-            <p className="text-sm font-bold text-gray-500">
+            <p className="text-sm font-extrabold text-red-600 tracking-wide">
               &copy; 2026 Fuel Terminal Tuban. All Rights Reserved
             </p>
           </div>
