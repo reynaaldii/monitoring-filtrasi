@@ -3,7 +3,7 @@ import { Calendar, Save, Download, AlertCircle, Clock, Filter } from 'lucide-rea
 
 export default function App() {
   const bays = ['1', '2', '3', '4'];
-  const jalurs = ['PERTAMAX', 'PERTALITE', 'B40'];
+  const jalurs = ['PERTAMAX', 'PERTALITE', 'BIO SOLAR'];
   const bulanList = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
   const [selectedBay, setSelectedBay] = useState('1');
