@@ -103,7 +103,7 @@ export default function App() {
     script.onload = () => {
       const XLSX = window.XLSX;
       const wsData = [
-        ['MONITORING SISTEM FILTRASI - MESH 60'],
+        ['MONITORING SISTEM FILTRASI FILLING SHED - MESH 60'],
         [`Bay Area: ${selectedBay}`, '', '', `Jalur: ${selectedJalur}`, '', '', `Bulan: ${selectedBulan}`],
         [],
         ['Minggu', 'Tanggal', 'ΔP Rata-rata (bar)', 'Flowrate Rata-rata (L/m)', 'Kondisi Filter', 'Indikasi', 'Tindakan', 'PIC', 'Keterangan', 'Tanggal Service Terakhir']
@@ -162,7 +162,7 @@ export default function App() {
           
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-row justify-between items-center gap-4">
             <div>
-              <h1 className="text-xl md:text-3xl font-extrabold text-black tracking-tight uppercase">MONITORING SISTEM FILTRASI</h1>
+              <h1 className="text-xl md:text-3xl font-extrabold text-black tracking-tight uppercase">MONITORING SISTEM FILTRASI FILLING SHED</h1>
               <p className="text-sm md:text-base text-gray-500 mt-1 font-medium">Log Inspeksi Mingguan (Mesh 60)</p>
             </div>
             
@@ -319,7 +319,7 @@ export default function App() {
           </div>
 
           {/* Copyright Footer */}
-          <div className="mt-20 text-center pb-8">
+          <div className="mt-[80px] text-center pb-8">
             <p className="text-sm font-bold text-gray-500">
               &copy; 2026 Fuel Terminal Tuban. All Rights Reserved
             </p>
