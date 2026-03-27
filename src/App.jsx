@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, Save, Download, AlertCircle, Clock, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Save, Download, AlertCircle, Clock, Filter, CheckCircle, XCircle } from 'lucide-react';
 
 export default function App() {
   const bays = ['1', '2', '3', '4'];
@@ -9,6 +9,16 @@ export default function App() {
   const [selectedBay, setSelectedBay] = useState('1');
   const [selectedJalur, setSelectedJalur] = useState('PERTAMAX');
   const [selectedBulan, setSelectedBulan] = useState('Januari');
+
+  // State untuk custom notifikasi (menggantikan alert)
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   const generateInitialWeeks = () => [
     { id: 1, minggu: 'Minggu 1', tanggal: '', deltaP: '', flowrate: '', kondisi: 'Bersih', indikasi: 'Normal', tindakan: '-', pic: '', keterangan: '', tanggalService: '' },
@@ -72,14 +82,14 @@ export default function App() {
     }
   };
 
-  // MENYIMPAN DATA KE MEMORI BROWSER (Bukan Server)
+  // MENYIMPAN DATA KE MEMORI BROWSER
   const handleSave = () => {
     setIsSaving(true);
     try {
       localStorage.setItem('dataMonitoringFiltrasi', JSON.stringify(allData));
-      alert(`Data monitoring untuk Bulan ${selectedBulan} berhasil disimpan dengan aman di perangkat ini!`);
+      showNotification(`Data untuk Bulan ${selectedBulan} berhasil disimpan!`, 'success');
     } catch (error) {
-      alert('Gagal menyimpan data ke memori perangkat.');
+      showNotification('Gagal menyimpan data ke memori perangkat.', 'error');
     }
     setIsSaving(false);
   };
@@ -123,16 +133,17 @@ export default function App() {
       XLSX.utils.book_append_sheet(wb, ws, `${selectedBulan} - B${selectedBay} ${selectedJalur}`);
       XLSX.writeFile(wb, `Monitoring_Filtrasi_Bay${selectedBay}_${selectedJalur}_${selectedBulan}.xlsx`);
       setIsExporting(false);
+      showNotification('File Excel berhasil diunduh!', 'success');
     };
     
     script.onerror = () => {
-      alert('Gagal memuat sistem pembuat Excel. Pastikan koneksi internet Anda aktif.');
+      showNotification('Gagal memuat sistem pembuat Excel. Periksa koneksi internet.', 'error');
       setIsExporting(false);
     };
     document.body.appendChild(script);
   };
 
-  const inputClassName = "w-full min-w-[120px] border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all";
+  const inputClassName = "w-full min-w-[120px] border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white";
 
   return (
     <>
@@ -145,40 +156,50 @@ export default function App() {
         `}
       </style>
 
-      <div className="min-h-screen bg-[#F8FAFC] p-3 sm:p-4 md:p-8 font-poppins text-black relative pb-24">
+      <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-8 font-poppins text-gray-800 relative pb-24">
+        
+        {/* Toast Notification */}
+        {notification.show && (
+          <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-6 py-4 rounded-lg shadow-xl text-white font-medium transition-all transform translate-y-0 opacity-100 ${notification.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
+            {notification.type === 'success' ? <CheckCircle size={24} /> : <XCircle size={24} />}
+            {notification.message}
+          </div>
+        )}
+
         <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           
-          <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-lg sm:text-xl md:text-3xl font-extrabold text-black tracking-tight uppercase leading-snug">
-                MONITORING SISTEM FILTRASI FILLING SHED
+          {/* Header Section */}
+          <div className="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-2 h-full bg-blue-700"></div>
+            <div className="pl-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-blue-900 tracking-tight uppercase leading-snug">
+                Monitoring Sistem Filtrasi <br className="hidden md:block"/> Filling Shed
               </h1>
-              <p className="text-xs sm:text-sm md:text-base text-gray-500 mt-1 font-medium">Log Inspeksi Mingguan (Mesh 60)</p>
+              <p className="text-sm md:text-base text-gray-500 mt-2 font-medium flex items-center gap-2">
+                <Filter size={16} /> Log Inspeksi Mingguan (Mesh 60)
+              </p>
             </div>
             
-            <div className="flex items-center self-end sm:self-auto">
+            <div className="flex items-center self-end sm:self-auto bg-gray-50 p-3 rounded-xl border border-gray-100 shadow-inner">
               <img 
-                src="/image_ff3349.png" 
+                src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Pertamina_Logo.svg" 
                 alt="Pertamina Patra Niaga" 
-                className="h-10 sm:h-12 md:h-16 object-contain"
-                onError={(e) => { e.target.onerror = null; e.target.src = 'https://upload.wikimedia.org/wikipedia/commons/b/b2/Pertamina_Logo.svg' }}
+                className="h-10 sm:h-12 md:h-14 object-contain"
               />
             </div>
           </div>
 
-          <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-gray-200 flex flex-col lg:flex-row items-start lg:items-center gap-5 lg:gap-8">
-            <div className="flex items-center gap-2 text-black font-semibold">
-              <Filter size={20} className="text-blue-600" />
-              <span className="text-sm md:text-base whitespace-nowrap">Filter Area:</span>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4 lg:gap-8">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-gray-600 w-12 md:w-auto">Bulan:</span>
+          {/* Filter Section */}
+          <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col lg:flex-row items-start lg:items-center gap-6">
+            <div className="flex flex-col sm:flex-row w-full gap-5 lg:gap-8">
+              
+              {/* Bulan Filter */}
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Pilih Bulan</span>
                 <select
                   value={selectedBulan}
                   onChange={(e) => setSelectedBulan(e.target.value)}
-                  className="bg-white border border-gray-300 text-black text-sm font-bold rounded-md focus:ring-blue-500 focus:border-blue-500 block px-3 py-2 outline-none cursor-pointer shadow-sm w-full sm:w-auto"
+                  className="bg-gray-50 border border-gray-200 text-blue-900 text-base font-bold rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 block px-4 py-2.5 outline-none cursor-pointer shadow-sm min-w-[150px]"
                 >
                   {bulanList.map(bln => (
                     <option key={bln} value={bln}>{bln}</option>
@@ -186,14 +207,15 @@ export default function App() {
                 </select>
               </div>
 
-              <div className="flex items-start sm:items-center gap-3 flex-col sm:flex-row">
-                <span className="text-sm font-bold text-gray-600 w-12 md:w-auto">Bay:</span>
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              {/* Bay Filter */}
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Pilih Bay</span>
+                <div className="flex flex-wrap gap-2">
                   {bays.map(bay => (
                     <button
                       key={bay}
                       onClick={() => setSelectedBay(bay)}
-                      className={`flex-1 sm:flex-none px-4 md:px-6 py-2 text-xs md:text-sm font-extrabold rounded-md transition-all shadow-sm border ${selectedBay === bay ? 'bg-[#1E3A8A] text-white border-[#1E3A8A]' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'}`}
+                      className={`w-12 h-12 flex items-center justify-center text-base font-extrabold rounded-xl transition-all shadow-sm border-2 ${selectedBay === bay ? 'bg-blue-700 text-white border-blue-700 shadow-blue-200' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                     >
                       {bay}
                     </button>
@@ -201,24 +223,25 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex items-start sm:items-center gap-3 flex-col sm:flex-row">
-                <span className="text-sm font-bold text-gray-600 w-12 md:w-auto">Jalur:</span>
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              {/* Jalur Filter */}
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Pilih Jalur</span>
+                <div className="flex flex-wrap gap-2">
                   {jalurs.map(jalur => {
                     let btnClass = '';
                     if (jalur === 'PERTAMAX') {
-                      btnClass = selectedJalur === jalur ? 'bg-[#2563EB] text-white shadow-md border-[#2563EB]' : 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
+                      btnClass = selectedJalur === jalur ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-blue-50 text-blue-800 hover:bg-blue-100 border-blue-200';
                     } else if (jalur === 'PERTALITE') {
-                      btnClass = selectedJalur === jalur ? 'bg-[#16A34A] text-white shadow-md border-[#16A34A]' : 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200';
+                      btnClass = selectedJalur === jalur ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border-emerald-200';
                     } else if (jalur === 'BIO SOLAR') { 
-                      btnClass = selectedJalur === jalur ? 'bg-[#64748B] text-white shadow-md border-[#64748B]' : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300';
+                      btnClass = selectedJalur === jalur ? 'bg-slate-700 text-white border-slate-700 shadow-md' : 'bg-slate-100 text-slate-800 hover:bg-slate-200 border-slate-300';
                     }
                     
                     return (
                       <button
                         key={jalur}
                         onClick={() => setSelectedJalur(jalur)}
-                        className={`flex-1 sm:flex-none px-3 md:px-6 py-2 text-xs md:text-sm font-extrabold rounded-md transition-all border ${btnClass}`}
+                        className={`px-5 py-2.5 text-sm font-extrabold rounded-xl transition-all border-2 ${btnClass}`}
                       >
                         {jalur}
                       </button>
@@ -226,92 +249,105 @@ export default function App() {
                   })}
                 </div>
               </div>
+
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-[#F8FAFC] border-b border-gray-200 p-3 md:p-4 px-4 md:px-5">
-              <h3 className="font-bold text-[#1E3A8A] text-xs md:text-sm tracking-wide">Data Sheet Aktif: Bay {selectedBay} - Jalur {selectedJalur} - Bulan {selectedBulan}</h3>
+          {/* Table Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-gray-900 text-white p-4 px-6 flex justify-between items-center">
+              <h3 className="font-bold text-sm md:text-base tracking-wide flex items-center gap-2">
+                <Calendar size={18} className="text-blue-400" />
+                Data Sheet: <span className="text-blue-400">Bay {selectedBay}</span> | <span className="text-emerald-400">{selectedJalur}</span> | {selectedBulan}
+              </h3>
             </div>
+            
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left border-collapse min-w-[1000px]">
-                <thead className="bg-black text-white text-[10px] md:text-[11px] uppercase tracking-wider">
+                <thead className="bg-gray-50 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-200">
                   <tr>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap">MINGGU</th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-44">TANGGAL</th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-32">ΔP RATA-RATA<br/><span className="text-[9px] md:text-[10px] font-normal text-gray-400 normal-case">(bar)</span></th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-36">FLOWRATE RATA<br/><span className="text-[9px] md:text-[10px] font-normal text-gray-400 normal-case">(L/m)</span></th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-40">KONDISI FILTER</th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-36">INDIKASI</th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-44">TINDAKAN</th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-32">PIC</th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-56">KETERANGAN</th>
-                    <th className="px-3 md:px-5 py-3 md:py-4 font-extrabold whitespace-nowrap w-44">TANGGAL SERVICE<br/><span className="text-[9px] md:text-[10px] font-normal text-gray-400 normal-case">TERAKHIR</span></th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap">Minggu</th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-44">Tanggal</th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-32">ΔP Rata-rata <br/><span className="text-[10px] font-normal text-gray-400 normal-case">(bar)</span></th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-36">Flowrate Rata <br/><span className="text-[10px] font-normal text-gray-400 normal-case">(L/m)</span></th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-40">Kondisi Filter</th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-36">Indikasi</th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-44">Tindakan</th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-32">PIC</th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-56">Keterangan</th>
+                    <th className="px-5 py-4 font-extrabold whitespace-nowrap w-44">Tgl Service <br/><span className="text-[10px] font-normal text-gray-400 normal-case">Terakhir</span></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {currentData.map((row) => (
-                    <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-3 md:px-5 py-2 md:py-3 font-extrabold text-black whitespace-nowrap text-xs md:text-sm">{row.minggu}</td>
-                      <td className="px-3 md:px-5 py-2 md:py-3"><input type="date" value={row.tanggal} onChange={(e) => handleInputChange(row.id, 'tanggal', e.target.value)} className={inputClassName} /></td>
-                      <td className="px-3 md:px-5 py-2 md:py-3"><input type="number" step="0.01" placeholder="0.00" value={row.deltaP} onChange={(e) => handleInputChange(row.id, 'deltaP', e.target.value)} className={inputClassName} /></td>
-                      <td className="px-3 md:px-5 py-2 md:py-3"><input type="number" step="0.1" placeholder="0.0" value={row.flowrate} onChange={(e) => handleInputChange(row.id, 'flowrate', e.target.value)} className={inputClassName} /></td>
-                      <td className="px-3 md:px-5 py-2 md:py-3">
+                    <tr key={row.id} className="hover:bg-blue-50/30 transition-colors">
+                      <td className="px-5 py-3 font-extrabold text-blue-900 whitespace-nowrap text-sm">{row.minggu}</td>
+                      <td className="px-5 py-3"><input type="date" value={row.tanggal} onChange={(e) => handleInputChange(row.id, 'tanggal', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="number" step="0.01" placeholder="0.00" value={row.deltaP} onChange={(e) => handleInputChange(row.id, 'deltaP', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="number" step="0.1" placeholder="0.0" value={row.flowrate} onChange={(e) => handleInputChange(row.id, 'flowrate', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3">
                         <select value={row.kondisi} onChange={(e) => handleInputChange(row.id, 'kondisi', e.target.value)} className={inputClassName}>
                           {kondisiOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                       </td>
-                      <td className="px-3 md:px-5 py-2 md:py-3">
+                      <td className="px-5 py-3">
                         <select value={row.indikasi} onChange={(e) => handleInputChange(row.id, 'indikasi', e.target.value)} className={`w-full min-w-[120px] border rounded-md shadow-sm text-sm p-2 font-bold focus:outline-none transition-all ${getIndikasiColor(row.indikasi)}`}>
                           {indikasiOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                       </td>
-                      <td className="px-3 md:px-5 py-2 md:py-3">
+                      <td className="px-5 py-3">
                         <select value={row.tindakan} onChange={(e) => handleInputChange(row.id, 'tindakan', e.target.value)} className={inputClassName}>
                           {tindakanOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                         </select>
                       </td>
-                      <td className="px-3 md:px-5 py-2 md:py-3"><input type="text" placeholder="PIC" value={row.pic} onChange={(e) => handleInputChange(row.id, 'pic', e.target.value)} className={inputClassName} /></td>
-                      <td className="px-3 md:px-5 py-2 md:py-3"><input type="text" placeholder="Catatan..." value={row.keterangan} onChange={(e) => handleInputChange(row.id, 'keterangan', e.target.value)} className={inputClassName} /></td>
-                      <td className="px-3 md:px-5 py-2 md:py-3"><input type="date" value={row.tanggalService} onChange={(e) => handleInputChange(row.id, 'tanggalService', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="text" placeholder="Nama PIC" value={row.pic} onChange={(e) => handleInputChange(row.id, 'pic', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="text" placeholder="Catatan..." value={row.keterangan} onChange={(e) => handleInputChange(row.id, 'keterangan', e.target.value)} className={inputClassName} /></td>
+                      <td className="px-5 py-3"><input type="date" value={row.tanggalService} onChange={(e) => handleInputChange(row.id, 'tanggalService', e.target.value)} className={inputClassName} /></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             
-            <div className="bg-white p-4 md:p-5 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
-              <button onClick={handleExportExcel} disabled={isExporting} className={`flex justify-center items-center gap-2 w-full sm:w-auto px-5 py-2.5 bg-white border border-[#16A34A] text-[#16A34A] rounded-md hover:bg-green-50 transition-all font-bold text-sm shadow-sm ${isExporting ? 'opacity-70 cursor-wait' : ''}`}>
-                <Download size={18} />
-                {isExporting ? 'Memproses Excel...' : 'Export Excel'}
+            {/* Action Buttons */}
+            <div className="bg-gray-50 p-5 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-4">
+              <button onClick={handleExportExcel} disabled={isExporting} className={`flex justify-center items-center gap-2 w-full sm:w-auto px-6 py-3 bg-white border-2 border-emerald-600 text-emerald-600 rounded-xl hover:bg-emerald-50 hover:shadow-md transition-all font-bold text-sm ${isExporting ? 'opacity-70 cursor-wait' : ''}`}>
+                <Download size={20} />
+                {isExporting ? 'Memproses Excel...' : 'Unduh Excel'}
               </button>
-              <button onClick={handleSave} disabled={isSaving} className={`flex justify-center items-center gap-2 w-full sm:w-auto bg-[#2563EB] hover:bg-blue-700 text-white px-6 py-2.5 rounded-md font-bold text-sm transition-all shadow-sm ${isSaving ? 'opacity-70 cursor-wait' : ''}`}>
-                <Save size={18} />
-                {isSaving ? 'Menyimpan...' : 'Simpan Data'}
+              <button onClick={handleSave} disabled={isSaving} className={`flex justify-center items-center gap-2 w-full sm:w-auto bg-blue-700 hover:bg-blue-800 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 ${isSaving ? 'opacity-70 cursor-wait' : ''}`}>
+                <Save size={20} />
+                {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
-             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-5 flex gap-3 md:gap-4 shadow-sm">
-               <Clock className="text-blue-600 shrink-0 mt-0.5" size={24} />
+          {/* Info Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 pt-4">
+             <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-2xl p-5 md:p-6 flex gap-4 shadow-sm hover:shadow-md transition-shadow">
+               <div className="bg-blue-100 p-3 rounded-xl h-fit">
+                 <Clock className="text-blue-700" size={24} />
+               </div>
                <div>
-                  <h4 className="font-bold text-blue-900 text-sm md:text-base">Siklus Cleaning</h4>
-                  <p className="text-xs md:text-sm text-blue-800 mt-1 md:mt-1.5 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
+                  <h4 className="font-extrabold text-blue-900 text-base md:text-lg mb-1">Siklus Cleaning</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status <span className="font-bold text-gray-800">"Clogging" (Kritis)</span> yang dapat menghentikan aliran operasi (flowrate drop).</p>
                </div>
              </div>
              
-             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-5 flex gap-3 md:gap-4 shadow-sm">
-               <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={24} />
+             <div className="bg-gradient-to-br from-amber-50 to-white border border-amber-100 rounded-2xl p-5 md:p-6 flex gap-4 shadow-sm hover:shadow-md transition-shadow">
+               <div className="bg-amber-100 p-3 rounded-xl h-fit">
+                 <AlertCircle className="text-amber-600" size={24} />
+               </div>
                <div>
-                  <h4 className="font-bold text-amber-900 text-sm md:text-base">Peringatan ΔP (Pressure Drop)</h4>
-                  <p className="text-xs md:text-sm text-amber-800 mt-1 md:mt-1.5 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
+                  <h4 className="font-extrabold text-amber-900 text-base md:text-lg mb-1">Peringatan ΔP (Pressure Drop)</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600 bg-red-100 px-2 py-0.5 rounded">Warning</strong> dan siapkan jadwal pembersihan.</p>
                </div>
              </div>
           </div>
 
-          <div className="mt-10 md:mt-12 text-center pb-8">
-            <p className="text-xs md:text-sm font-bold text-gray-500">
+          {/* Footer dengan Teks Merah Sesuai Permintaan */}
+          <div className="mt-16 text-center pb-8 border-t border-gray-200 pt-8">
+            <p className="text-red-600 font-extrabold text-sm md:text-base tracking-wide uppercase">
               &copy; 2026 Fuel Terminal Tuban. All Rights Reserved
             </p>
           </div>
