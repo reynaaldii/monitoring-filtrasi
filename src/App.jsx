@@ -304,20 +304,16 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
-             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-5 flex gap-3 md:gap-4 shadow-sm">
-               <Clock className="text-blue-600 shrink-0 mt-0.5" size={24} />
-               <div>
-                  <h4 className="font-bold text-blue-900 text-sm md:text-base">Siklus Cleaning</h4>
-                  <p className="text-xs md:text-sm text-blue-800 mt-0.5 md:mt-1 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
-               </div>
+             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 md:p-5 shadow-sm">
+               <Clock className="text-blue-600 mb-3" size={28} />
+               <h4 className="font-bold text-blue-900 text-sm md:text-base">Siklus Cleaning</h4>
+               <p className="text-xs md:text-sm text-blue-800 mt-1 md:mt-1.5 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
              </div>
              
-             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-5 flex gap-3 md:gap-4 shadow-sm">
-               <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={24} />
-               <div>
-                  <h4 className="font-bold text-amber-900 text-sm md:text-base">Peringatan ΔP (Pressure Drop)</h4>
-                  <p className="text-xs md:text-sm text-amber-800 mt-1 md:mt-1.5 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
-               </div>
+             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 md:p-5 shadow-sm">
+               <AlertCircle className="text-amber-600 mb-3" size={28} />
+               <h4 className="font-bold text-amber-900 text-sm md:text-base">Peringatan ΔP (Pressure Drop)</h4>
+               <p className="text-xs md:text-sm text-amber-800 mt-1 md:mt-1.5 leading-relaxed">Jika ΔP meningkat tajam meskipun flowrate stabil atau menurun, segera ubah status ke <strong className="text-red-600">Warning</strong> dan siapkan jadwal pembersihan.</p>
              </div>
           </div>
 
