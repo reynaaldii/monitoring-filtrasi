@@ -315,7 +315,7 @@ export default function App() {
                <Clock className="text-blue-600 shrink-0 mt-0.5" size={24} />
                <div>
                   <h4 className="font-bold text-blue-900 text-sm md:text-base">Siklus Cleaning</h4>
-                  <p className="text-xs md:text-sm text-blue-800 mt-1 md:mt-1.5 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
+                  <p className="text-xs md:text-sm text-blue-800 mt-1 md:mt-1 leading-relaxed">Pemantauan mingguan memastikan filter dibersihkan tepat waktu sebelum mencapai status "Clogging" (Kritis) yang dapat menghentikan aliran operasi (flowrate drop).</p>
                </div>
              </div>
              
